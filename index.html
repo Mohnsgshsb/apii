@@ -3,20 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🧠 واجهة الـ APIs الخاصة بي</title>
+  <title>🧩 جميع الـ APIs الخاصة بي</title>
   <style>
     body {
       font-family: "Cairo", sans-serif;
-      background: #0e1117;
+      background: #0d1117;
       color: #fff;
       margin: 0;
       padding: 20px;
       direction: rtl;
     }
-    h1 {
+    header {
       text-align: center;
-      color: #00e5ff;
       margin-bottom: 30px;
+    }
+    header h1 {
+      color: #00e5ff;
+      font-size: 28px;
+    }
+    header p {
+      color: #aaa;
+      margin-top: 5px;
+    }
+    .search-box {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .search-box input {
+      width: 80%;
+      max-width: 400px;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      font-size: 16px;
     }
     .container {
       display: grid;
@@ -24,64 +44,114 @@
       gap: 20px;
     }
     .card {
-      background: #1a1f29;
+      background: #161b22;
       border-radius: 12px;
       padding: 20px;
-      box-shadow: 0 0 10px #00e5ff33;
+      box-shadow: 0 0 12px #00e5ff33;
       transition: transform 0.3s ease;
     }
     .card:hover {
-      transform: scale(1.03);
+      transform: translateY(-5px);
     }
     .card h2 {
       color: #00e5ff;
       font-size: 20px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
     .card p {
       color: #ccc;
       font-size: 14px;
       margin-bottom: 10px;
+      line-height: 1.4;
     }
-    .card a {
-      color: #00e5ff;
+    .btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn {
       text-decoration: none;
+      background: #00e5ff;
+      color: #000;
+      padding: 6px 12px;
+      border-radius: 8px;
       font-weight: bold;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background: #00b8d4;
     }
     footer {
       text-align: center;
-      margin-top: 40px;
       color: #777;
+      margin-top: 40px;
     }
   </style>
 </head>
 <body>
-  <h1>🚀 جميع الـ APIs الخاصة بي</h1>
+  <header>
+    <h1>🚀 قائمة الـ APIs الخاصة بي</h1>
+    <p>تم توليد هذه الصفحة تلقائيًا من ملفات <code>api/*.js</code> بواسطة <b>generate_api_json.js</b></p>
+  </header>
+
+  <div class="search-box">
+    <input type="text" id="search" placeholder="🔍 ابحث عن API..." oninput="filterAPIs()">
+  </div>
+
   <div id="apiContainer" class="container"></div>
 
   <footer>© 2025 Mohnsgshsb - All Rights Reserved</footer>
 
   <script>
-    fetch("apis.json")
-      .then(res => res.json())
-      .then(data => {
-        const container = document.getElementById("apiContainer");
-        data.forEach(api => {
-          const card = document.createElement("div");
-          card.className = "card";
-          card.innerHTML = `
-            <h2>${api.name}</h2>
-            <p>${api.description}</p>
-            <a href="${api.url}" target="_blank">🌐 زيارة الـ API</a>
-          `;
-          container.appendChild(card);
-        });
-      })
-      .catch(err => {
+    let allAPIs = [];
+
+    async function loadAPIs() {
+      try {
+        const res = await fetch("apis.json?_=" + Date.now()); // منع الكاش
+        const data = await res.json();
+        allAPIs = data;
+        renderAPIs(data);
+      } catch (err) {
         console.error(err);
         document.getElementById("apiContainer").innerHTML =
-          "<p>⚠️ لم يتم العثور على ملف APIs.</p>";
+          "<p>⚠️ لم يتم العثور على ملف apis.json. شغل generate_api_json.js ثم ادفع التغييرات.</p>";
+      }
+    }
+
+    function renderAPIs(apis) {
+      const container = document.getElementById("apiContainer");
+      container.innerHTML = "";
+
+      if (apis.length === 0) {
+        container.innerHTML = "<p>لا توجد APIs متاحة.</p>";
+        return;
+      }
+
+      apis.forEach(api => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <h2>${api.name}</h2>
+          <p>${api.description}</p>
+          <div class="btns">
+            <a href="${api.url}" target="_blank" class="btn">🌐 فتح الـ API</a>
+            <a href="https://raw.githubusercontent.com/Mohnsgshsb/apii/main/${api.file}" target="_blank" class="btn">💻 عرض الكود</a>
+          </div>
+        `;
+        container.appendChild(card);
       });
+    }
+
+    function filterAPIs() {
+      const value = document.getElementById("search").value.toLowerCase();
+      const filtered = allAPIs.filter(api =>
+        api.name.toLowerCase().includes(value) ||
+        api.description.toLowerCase().includes(value)
+      );
+      renderAPIs(filtered);
+    }
+
+    loadAPIs();
   </script>
 </body>
 </html>
